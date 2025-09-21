@@ -1,0 +1,18 @@
+# Ignorar directorios de build locales
+target/
+.quarkus/
+
+# Ignorar archivos temporales
+*.log
+*.tmp
+
+# Ignorar IDE
+.idea/
+.vscode/
+*.iml
+
+# Ignorar Git
+.git
+.gitignore
+
+# NO ignores src, pom.xml, mvnw, .mvn (son necesarios en el build stage)

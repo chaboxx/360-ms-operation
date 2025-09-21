@@ -1,0 +1,285 @@
+openapi: 3.0.3
+info:
+  title: Operations API
+  version: 0.1.0-SNAPSHOT
+  description: >
+    API para gestionar operaciones financieras, saldos por cuenta y divisas.
+servers:
+  - url: /v0
+
+paths:
+  /currencies:
+    get:
+      summary: Listar divisas
+      responses:
+        '200':
+          description: Lista de divisas disponibles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Currency'
+    post:
+      summary: Crear nueva divisa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCurrencyCommand'
+      responses:
+        '201':
+          description: Divisa creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Currency'
+
+  /currencies/{currencyCode}:
+    get:
+      summary: Obtener divisa por código
+      parameters:
+        - name: currencyCode
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Divisa encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Currency'
+
+  /money:
+    get:
+      summary: Listar saldos de cuentas
+      responses:
+        '200':
+          description: Lista de saldos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Money'
+    post:
+      summary: Crear saldo en una cuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMoneyCommand'
+      responses:
+        '201':
+          description: Saldo creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Money'
+
+  /money/{moneyId}:
+    get:
+      summary: Obtener saldo por ID
+      parameters:
+        - name: moneyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Saldo encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Money'
+
+  /operation-types:
+    get:
+      summary: Listar tipos de operación
+      responses:
+        '200':
+          description: Lista de tipos de operación
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OperationType'
+    post:
+      summary: Crear nuevo tipo de operación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOperationTypeCommand'
+      responses:
+        '201':
+          description: Tipo de operación creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationType'
+
+  /operations:
+    get:
+      summary: Listar operaciones
+      responses:
+        '200':
+          description: Lista de operaciones realizadas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Operation'
+    post:
+      summary: Crear operación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOperationCommand'
+      responses:
+        '201':
+          description: Operación creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operation'
+
+  /operations/{operationId}:
+    get:
+      summary: Obtener operación por ID
+      parameters:
+        - name: operationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Operación encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Operation'
+
+components:
+  schemas:
+    # ----- Currency -----
+    CreateCurrencyCommand:
+      type: object
+      required: [currencyCode, currencyName]
+      properties:
+        currencyCode:
+          type: string
+          example: USD
+        currencyName:
+          type: string
+          example: US Dollar
+    Currency:
+      type: object
+      properties:
+        currencyId:
+          type: integer
+        currencyCode:
+          type: string
+        currencyName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ----- Money -----
+    CreateMoneyCommand:
+      type: object
+      required: [balance, accountId, currencyCode]
+      properties:
+        balance:
+          type: number
+          format: double
+        accountId:
+          type: string
+          format: uuid
+        currencyCode:
+          type: string
+    Money:
+      type: object
+      properties:
+        moneyId:
+          type: integer
+        balance:
+          type: number
+          format: double
+        accountId:
+          type: string
+          format: uuid
+        currencyCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ----- OperationType -----
+    CreateOperationTypeCommand:
+      type: object
+      required: [operationCode]
+      properties:
+        operationCode:
+          type: string
+          example: SUM
+    OperationType:
+      type: object
+      properties:
+        operationId:
+          type: integer
+        operationCode:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # ----- Operations -----
+    CreateOperationCommand:
+      type: object
+      required: [operationType, moneyMaster, moneySecondary]
+      properties:
+        operationType:
+          type: integer
+        moneyMaster:
+          type: integer
+        moneySecondary:
+          type: integer
+    Operation:
+      type: object
+      properties:
+        operationId:
+          type: integer
+        operationType:
+          $ref: '#/components/schemas/OperationType'
+        moneyMaster:
+          $ref: '#/components/schemas/Money'
+        moneySecondary:
+          $ref: '#/components/schemas/Money'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

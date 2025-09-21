@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+     http://www.liquibase.org/xml/ns/dbchangelog
+     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v1-001-create-currency" author="rodrigo">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="Currency"/></not>
+        </preConditions>
+        <createTable tableName="Currency">
+            <column name="currency_id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="PK_Currency"/>
+            </column>
+            <column name="currency_code" type="VARCHAR(10)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="UQ_Currency_Code"/>
+            </column>
+            <column name="currency_name" type="VARCHAR(100)"/>
+            <column name="created_at" type="DATETIME2" defaultValueComputed="SYSUTCDATETIME()"/>
+            <column name="updated_at" type="DATETIME2" defaultValueComputed="SYSUTCDATETIME()"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="v1-002-create-money" author="rodrigo">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="Money"/></not>
+        </preConditions>
+        <createTable tableName="Money">
+            <column name="money_id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="PK_Money"/>
+            </column>
+            <column name="balance" type="DECIMAL(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="account_id" type="UNIQUEIDENTIFIER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="DATETIME2" defaultValueComputed="SYSUTCDATETIME()"/>
+            <column name="updated_at" type="DATETIME2" defaultValueComputed="SYSUTCDATETIME()"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="Money" baseColumnNames="currency_code"
+                constraintName="FK_Money_CurrencyCode"
+                referencedTableName="Currency" referencedColumnNames="currency_code"
+                onDelete="RESTRICT" onUpdate="CASCADE"/>
+        <createIndex tableName="Money" indexName="IX_Money_CurrencyCode">
+            <column name="currency_code"/>
+        </createIndex>
+        <createIndex tableName="Money" indexName="IX_Money_AccountId">
+            <column name="account_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v1-003-create-operationtype" author="rodrigo">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="OperationType"/></not>
+        </preConditions>
+        <createTable tableName="OperationType">
+            <column name="operation_id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="PK_OperationType"/>
+            </column>
+            <column name="operation_code" type="VARCHAR(20)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="UQ_OperationType_Code"/>
+            </column>
+            <column name="created_at" type="DATETIME2" defaultValueComputed="SYSUTCDATETIME()"/>
+            <column name="updated_at" type="DATETIME2" defaultValueComputed="SYSUTCDATETIME()"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="v1-004-create-operations" author="rodrigo">
+        <preConditions onFail="MARK_RAN">
+            <not><tableExists tableName="Operations"/></not>
+        </preConditions>
+        <createTable tableName="Operations">
+            <column name="operation_id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="PK_Operations"/>
+            </column>
+            <column name="operation_type" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="money_master" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="money_secondary" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="DATETIME2" defaultValueComputed="SYSUTCDATETIME()"/>
+            <column name="updated_at" type="DATETIME2" defaultValueComputed="SYSUTCDATETIME()"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="Operations" baseColumnNames="operation_type"
+                referencedTableName="OperationType" referencedColumnNames="operation_id"
+                constraintName="FK_Operations_OperationType"
+                onDelete="RESTRICT" onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="Operations" baseColumnNames="money_master"
+                referencedTableName="Money" referencedColumnNames="money_id"
+                constraintName="FK_Operations_MoneyMaster"
+                onDelete="RESTRICT" onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="Operations" baseColumnNames="money_secondary"
+                referencedTableName="Money" referencedColumnNames="money_id"
+                constraintName="FK_Operations_MoneySecondary"
+                onDelete="RESTRICT" onUpdate="CASCADE"/>
+
+        <createIndex tableName="Operations" indexName="IX_Operations_OpType">
+            <column name="operation_type"/>
+        </createIndex>
+        <createIndex tableName="Operations" indexName="IX_Operations_MoneyMaster">
+            <column name="money_master"/>
+        </createIndex>
+        <createIndex tableName="Operations" indexName="IX_Operations_MoneySecondary">
+            <column name="money_secondary"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Trigger simple para updated_at (opcional) -->
+    <changeSet id="v1-005-update-triggers" author="rodrigo" runOnChange="true" runAlways="true">
+        <sql>
+        <![CDATA[
+            -- Currency updated_at
+            IF OBJECT_ID('dbo.trg_Currency_Update', 'TR') IS NOT NULL DROP TRIGGER dbo.trg_Currency_Update;
+            CREATE TRIGGER dbo.trg_Currency_Update ON dbo.Currency
+                AFTER UPDATE AS
+            BEGIN
+          SET NOCOUNT ON;
+            UPDATE dbo.Currency SET updated_at = SYSUTCDATETIME()
+                FROM dbo.Currency c INNER JOIN inserted i ON c.currency_id = i.currency_id;
+            END;
+
+        -- Money updated_at
+        IF OBJECT_ID('dbo.trg_Money_Update', 'TR') IS NOT NULL DROP TRIGGER dbo.trg_Money_Update;
+            CREATE TRIGGER dbo.trg_Money_Update ON dbo.Money
+                AFTER UPDATE AS
+            BEGIN
+          SET NOCOUNT ON;
+            UPDATE dbo.Money SET updated_at = SYSUTCDATETIME()
+                FROM dbo.Money m INNER JOIN inserted i ON m.money_id = i.money_id;
+            END;
+
+        -- OperationType updated_at
+        IF OBJECT_ID('dbo.trg_OperationType_Update', 'TR') IS NOT NULL DROP TRIGGER dbo.trg_OperationType_Update;
+            CREATE TRIGGER dbo.trg_OperationType_Update ON dbo.OperationType
+                AFTER UPDATE AS
+            BEGIN
+          SET NOCOUNT ON;
+            UPDATE dbo.OperationType SET updated_at = SYSUTCDATETIME()
+                FROM dbo.OperationType ot INNER JOIN inserted i ON ot.operation_id = i.operation_id;
+            END;
+
+        -- Operations updated_at
+        IF OBJECT_ID('dbo.trg_Operations_Update', 'TR') IS NOT NULL DROP TRIGGER dbo.trg_Operations_Update;
+            CREATE TRIGGER dbo.trg_Operations_Update ON dbo.Operations
+                AFTER UPDATE AS
+            BEGIN
+          SET NOCOUNT ON;
+            UPDATE dbo.Operations SET updated_at = SYSUTCDATETIME()
+                FROM dbo.Operations o INNER JOIN inserted i ON o.operation_id = i.operation_id;
+            END;
+            ]]>
+        </sql>
+    </changeSet>
+
+    <rollback>
+        <dropTable tableName="Operations"/>
+        <dropTable tableName="OperationType"/>
+        <dropTable tableName="Money"/>
+        <dropTable tableName="Currency"/>
+    </rollback>
+</databaseChangeLog>
