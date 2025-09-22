@@ -20,7 +20,14 @@ resource "azurerm_mssql_server" "sql_server" {
 resource "azurerm_mssql_database" "sql_db" {
   name           = "${var.az_project_name}-db"
   server_id      = azurerm_mssql_server.sql_server.id
-  sku_name       = "S0" # Standard
+  sku_name       = "Free"
   collation      = "SQL_Latin1_General_CP1_CI_AS"
-  max_size_gb    = 10
+}
+
+# Firewall
+resource "azurerm_mssql_firewall_rule" "allow_lambda" {
+  server_id        = azurerm_mssql_server.sql_server.id
+  name             = "allow-aws-lambda"
+  start_ip_address = "0.0.0.0"
+  end_ip_address   = "255.255.255.255"
 }

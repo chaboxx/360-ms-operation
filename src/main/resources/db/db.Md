@@ -37,7 +37,7 @@ El sistema **Operation_Ms** gestiona saldos por cuenta y registra operaciones fi
 ---
 
 ## 🧱 Esquema lógico
-![Esquema Lógico](../../../../../assets/360-ms-operation.png)
+![Esquema Lógico](../../../../assets/360-ms-operation.png)
 ```text
 Currency (currency_code) ────< Money (currency_code)
 

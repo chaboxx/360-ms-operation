@@ -36,13 +36,13 @@ variable "use_apigw" {
 variable "az_project_name" {
   description = "Nombre base del proyecto"
   type        = string
-  default = "db-360-operation-1"
+  default = "db-360-operation-3765239"
 }
 
 variable "az_location" {
   description = "Región de Azure donde desplegar"
   type        = string
-  default     = "Central US"
+  default     = "canadacentral"
 }
 
 variable "az_sql_admin_user" {

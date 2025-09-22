@@ -1,1 +1,0 @@
-CREATE DATABASE Operation_Ms;

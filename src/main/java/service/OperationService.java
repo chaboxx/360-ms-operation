@@ -1,8 +1,6 @@
 package service;
 
-import domain.command.CreateOperationCommand;
-import domain.model.Operation;
-import domain.repository.IOperationRepository;
+import api.model.CreateOperationCommand;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -11,15 +9,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OperationService {
 
-    private final IOperationRepository operationRepository;
-
     @Transactional
-    public Operation createOperation(CreateOperationCommand command) {
-        Operation operation = Operation.builder()
-                .operationName(command.getOperationName())
-                .operationType(command.getOperationType())
-                .build();
+    public api.model.Operation createOperation(CreateOperationCommand command) {
+        api.model.Operation operation = new api.model.Operation();
 
-        return operationRepository.create(operation);
+        operation.setOperationId(1);
+        return operation;
     }
 }

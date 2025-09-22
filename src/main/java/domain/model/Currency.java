@@ -7,28 +7,22 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Operations")
+@Table(name = "Currency")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Operation extends PanacheEntityBase {
+public class Currency extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "operation_id")
-    private Integer operationId;
+    @Column(name = "currency_id")
+    private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "operation_type")
-    private OperationType operationType;
+    @Column(name = "currency_code", unique = true, nullable = false, length = 10)
+    private String code;
 
-    @ManyToOne
-    @JoinColumn(name = "money_master")
-    private Money moneyMaster;
-
-    @ManyToOne
-    @JoinColumn(name = "money_secondary")
-    private Money moneySecondary;
+    @Column(name = "currency_name", nullable = false, length = 100)
+    private String name;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

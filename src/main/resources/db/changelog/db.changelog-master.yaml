@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: chaboxx159@gmail.com
+      changes:
+        - sqlFile:
+            path: changesets/2025-09-22-01-create-tables/2025-09-22-01-create-tables.sql
+            relativeToChangelogFile: true
+            splitStatements: true
+            stripComments: true
