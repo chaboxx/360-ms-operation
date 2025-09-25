@@ -152,7 +152,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Operation'
+                $ref: '#/components/schemas/CreateOperationResponse'
 
   /operations/{operationId}:
     get:
@@ -266,6 +266,13 @@ components:
           type: integer
         moneySecondary:
           type: integer
+    CreateOperationResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        operation:
+          $ref: '#/components/schemas/Operation'
     Operation:
       type: object
       properties:

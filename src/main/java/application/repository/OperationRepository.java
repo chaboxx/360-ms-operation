@@ -11,7 +11,7 @@ import java.util.UUID;
 public class OperationRepository implements PanacheRepositoryBase<Operation, UUID> {
 
     public Operation create(Operation operation) {
-        persist(operation);
+//        persist(operation);
         return operation;
     }
 }

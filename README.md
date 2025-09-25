@@ -69,3 +69,8 @@ If you want to learn more about building native executables, please consult <htt
   for Hibernate ORM via the active record or the repository pattern
 - Apache Kafka Streams ([guide](https://quarkus.io/guides/kafka-streams)): Implement stream processing applications
   based on Apache Kafka
+
+
+```bash
+docker buildx build --platform linux/amd64 --output type=docker --provenance=false -t 360/operation .
+```

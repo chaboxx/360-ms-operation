@@ -2,6 +2,7 @@ package application.controller;
 
 import api.OperationsApi;
 import api.model.CreateOperationCommand;
+import api.model.CreateOperationResponse;
 import jakarta.enterprise.context.ApplicationScoped;
 import lombok.RequiredArgsConstructor;
 import service.OperationService;
@@ -26,7 +27,7 @@ public class RestController implements OperationsApi {
     }
 
     @Override
-    public api.model.Operation operationsPost(CreateOperationCommand createOperationCommand) {
+    public CreateOperationResponse operationsPost(CreateOperationCommand createOperationCommand) {
 
         return operationService.createOperation(createOperationCommand);
     }
