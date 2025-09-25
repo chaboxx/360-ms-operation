@@ -55,7 +55,7 @@ public class OperationService {
         Operation saved = operationRepository.create(entity);
 
         CreateOperationResponse response = new CreateOperationResponse();
-        response.setMessage("Operación creada correctamente");
+        response.setMessage("Github actions: Operación creada correctamente");
         response.setOperation(mapper.toApi(saved));
         return response;
     }
