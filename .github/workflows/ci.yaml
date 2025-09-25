@@ -1,21 +1,49 @@
-name: CI
+name: Build & Deploy to AWS Lambda
+
 on:
-  pull_request:
   push:
-    branches: [ main ]
+    branches:
+      - main
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build Native Image (containerized)
+      # 1. Checkout del repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Configurar credenciales de AWS
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+
+      # 3. Login en ECR
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 943310795315.dkr.ecr.us-east-2.amazonaws.com
+
+      # 4. Build con buildx
+      - name: Build Docker image
         run: |
           docker buildx build \
             --platform linux/amd64 \
-            -f docker/Dockerfile.lambda-native \
-            --load \
-            -t ops-lambda:ci .
+            --output type=docker \
+            --provenance=false \
+            -t 360/operation .
+
+      # 5. Tag y push a ECR
+      - name: Push to ECR
+        run: |
+          docker tag 360/operation:latest 943310795315.dkr.ecr.us-east-2.amazonaws.com/360/operation:latest
+          docker push 943310795315.dkr.ecr.us-east-2.amazonaws.com/360/operation:latest
+
+      # 6. Refrescar Lambda para usar la nueva imagen
+      - name: Update Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name ops-lambda \
+            --image-uri 943310795315.dkr.ecr.us-east-2.amazonaws.com/360/operation:latest
